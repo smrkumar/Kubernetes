@@ -1,0 +1,24 @@
+sudo: required
+language: generic
+
+services:
+  - docker
+
+before_install:
+  - docker build -t smritidevopslearning/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true smritidevopslearning/react-test npm test
+
+after_success:
+  - docker build -t smritidevopslearning/multi-client ./client
+  - docker build -t smritidevopslearning/multi-nginx ./nginx
+  - docker build -t smritidevopslearning/multi-server ./server
+  - docker build -t smritidevopslearning/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push smritidevopslearning/multi-client
+  - docker push smritidevopslearning/multi-nginx
+  - docker push smritidevopslearning/multi-server
+  - docker push smritidevopslearning/multi-worker
